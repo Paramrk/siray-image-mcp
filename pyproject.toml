@@ -1,0 +1,13 @@
+[project]
+name = "siray-imagegen"
+version = "0.1.0"
+description = "Siray image generator: MCP server for Claude Code + local web UI"
+requires-python = ">=3.10"
+dependencies = [
+    "httpx>=0.28.1",
+    "mcp[cli]>=1.2.0",
+    "pillow>=12.3.0",
+]
+
+[tool.uv]
+package = false
