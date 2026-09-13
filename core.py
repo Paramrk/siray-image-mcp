@@ -39,6 +39,20 @@ _GEOMETRY_BLIND = ("bytedance/seedream",)
 SUCCESS = ("succeeded", "success", "completed", "finished", "done")
 FAILURE = ("failed", "error", "cancelled", "canceled")
 
+# Siray's API exposes no credits/balance endpoint (checked: /account, /credits, /usage
+# all 404). One credit == one generation call that actually ran (preflight refusals
+# never reach here), so a per-model call count is the closest true measure available.
+_usage = {}
+
+
+def usage_summary():
+    """Generations spent so far this process, per model. A fresh MCP server process
+    is started per conversation, so this doubles as the per-conversation total."""
+    if not _usage:
+        return "no generations yet this session"
+    lines = ", ".join(f"{m}: {n}" for m, n in sorted(_usage.items()))
+    return f"{lines} (total: {sum(_usage.values())})"
+
 
 def load_env(path=None):
     """Read KEY=VALUE lines from .env. Existing env vars win."""
@@ -323,5 +337,7 @@ def generate(prompt, out_dir, model=None, image=None, aspect_ratio=None, seed=No
     if seed is not None:
         body["seed"] = int(seed)
 
-    return download(_run_task(body, timeout), out_dir, prompt,
-                    size=wanted if (wanted and exact) else None)
+    saved = download(_run_task(body, timeout), out_dir, prompt,
+                     size=wanted if (wanted and exact) else None)
+    _usage[model] = _usage.get(model, 0) + 1
+    return saved

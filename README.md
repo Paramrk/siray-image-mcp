@@ -83,6 +83,21 @@ under a second — both the MCP tools and the web UI surface the reason, not jus
 because an opaque failure is what causes an agent to retry blindly and waste the credit
 this exists to save.
 
+### Usage tracking
+
+Siray's API has no credits/balance endpoint, so `core.py` keeps its own count: every
+successful generation (refusals don't count — nothing was spent) increments a per-model
+counter for the life of the server process. `generate_image` and `generate_backdrop` both
+append a line to their output:
+
+```
+credits used this session — google/nano-banana-pro-t2i: 2, openai/gpt-image-2-t2i: 1 (total: 3)
+```
+
+An MCP server process is started fresh per conversation, so "this session" is "this
+conversation". The counter resets when the server restarts — it's a running tally, not a
+persisted ledger.
+
 ## Dimensions
 
 Pass `size="1920x1080"` and you get exactly that, on any model — how it gets there differs

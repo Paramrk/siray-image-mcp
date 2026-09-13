@@ -34,9 +34,16 @@ def _assert_size_routing():
         sent.clear()
         core.generate("p", "out", model="google/nano-banana-pro-t2i", aspect_ratio="4:3")
         assert sent.get("aspect_ratio") == "4:3" and "size" not in sent, sent
+
+        # Every successful generate() call above must be counted, per model.
+        assert core._usage["openai/gpt-image-2-t2i"] == 1
+        assert core._usage["bytedance/seedream-4.5-t2i"] == 1
+        assert core._usage["google/nano-banana-pro-t2i"] == 2
+        assert "total: 4" in core.usage_summary()
     finally:
         core._run_task, core.download = real_run, real_download
         core._models_cache = None
+        core._usage = {}
 
 
 def _assert_preflight():
