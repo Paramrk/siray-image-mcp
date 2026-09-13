@@ -62,7 +62,9 @@ def generate_image(
     warnings: list[str] = []
     paths = core.generate(prompt, out_dir, model, image, aspect_ratio, seed, size,
                           warnings_out=warnings)
-    return "\n".join([str(p) for p in paths] + [f"note: {w}" for w in warnings])
+    lines = [str(p) for p in paths] + [f"note: {w}" for w in warnings]
+    lines.append(f"credits used this session — {core.usage_summary()}")
+    return "\n".join(lines)
 
 
 @mcp.tool()
@@ -119,6 +121,7 @@ def generate_backdrop(
     for path in paths:
         ok, report = backdrop.inspect(path, palette, overlay_text_color, tileable)
         lines += [str(path), "PASS" if ok else "FAILED — usable but flawed:"] + report
+    lines.append(f"credits used this session — {core.usage_summary()}")
     return "\n".join(lines)
 
 
